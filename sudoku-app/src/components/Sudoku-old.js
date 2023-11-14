@@ -1,5 +1,6 @@
 // src/components/Sudoku.js
 import React, { useState, useEffect } from 'react';
+import solveSudoku from './sudokuSolver';
 import './Sudoku.scss';
 
 const EMPTY_SUDOKU = Array.from({ length: 9 }, () => Array(9).fill(0));
@@ -90,35 +91,26 @@ const Sudoku = () => {
       return true;
   };
     
-  const solveSudoku = () => {
-    const solution = [
-      [5, 3, 4, 6, 7, 8, 9, 1, 2],
-      [6, 7, 2, 1, 9, 5, 3, 4, 8],
-      [1, 9, 8, 3, 4, 2, 5, 6, 7],
-      [8, 5, 9, 7, 6, 1, 4, 2, 3],
-      [4, 2, 6, 8, 5, 3, 7, 9, 1],
-      [7, 1, 3, 9, 2, 4, 8, 5, 6],
-      [9, 6, 1, 5, 3, 7, 2, 8, 4],
-      [2, 8, 7, 4, 1, 9, 6, 3, 5],
-      [3, 4, 5, 2, 8, 6, 1, 7, 9],
-    ];
+  const solveSudoku = (sudoku) => {
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (sudoku[row][col] === 0) {
+          for (let num = 1; num <= 9; num++) {
+            if (isSafe(sudoku, row, col, num)) {
+              sudoku[row][col] = num;
   
-    setSudoku(solution);
-    setIsSolved(true);
-    setShowSolution(true);
+              if (solveSudoku(sudoku)) {
+                return true;
+              }
   
-    // Start countdown for new puzzle generation
-    const intervalId = setInterval(() => {
-      setCountdown((prevCountdown) => prevCountdown - 1);
-    }, 1000);
-  
-    // Reset puzzle after countdown
-    setTimeout(() => {
-      clearInterval(intervalId);
-      resetPuzzle();
-    }, 5000);
-  
-    setMessage('Congratulations! Puzzle solved successfully!');
+              sudoku[row][col] = 0;
+            }
+          }
+          return false;
+        }
+      }
+    }
+    return true;
   };
 
   const showToast = (message) => {
@@ -128,28 +120,40 @@ const Sudoku = () => {
 
   const solvePuzzle = () => {
     if (difficulty) {
-
       const solvedSudoku = JSON.parse(JSON.stringify(originalSudoku)); // Create a copy of the original puzzle
-      if (solveSudoku(solvedSudoku)) {
-        setSudoku(solvedSudoku);
+      if (Array.isArray(solvedSudoku)) {
+        const filledSudoku = solvedSudoku.map((row, rowIndex) =>
+          row.map((cell, colIndex) => {
+            const originalValue = originalSudoku[rowIndex][colIndex];
+            return {
+              value: cell !== 0 ? String(cell) : '', // Convert non-zero values to string, keep empty if it's 0
+              solved: cell === originalValue,
+              incorrect: cell !== originalValue && cell !== 0,
+            };
+          })
+        );
+  
+        setSudoku(filledSudoku);
         setIsSolved(true);
-        setShowSolution(true);
+  
         // Start countdown for new puzzle generation
         const intervalId = setInterval(() => {
           setCountdown((prevCountdown) => prevCountdown - 1);
         }, 1000);
+  
         // Reset puzzle after countdown
         setTimeout(() => {
           clearInterval(intervalId);
           resetPuzzle();
-        }, 3000);
-        setMessage('Congratulations! Puzzle solved successfully!');
+        }, 5000);
+  
+        setMessage({ text: 'Congratulations! Puzzle solved successfully!', type: 'success' });
       } else {
-        const isIncomplete = sudoku.some((row) => row.includes(0));
+        const isIncomplete = solvedSudoku === null || solvedSudoku.some((row) => row.includes(0));
         if (isIncomplete) {
-          setMessage('Please fill out the remaining cells.');
+          setMessage({ text: 'Please fill out the remaining cells.', type: 'info' });
         } else {
-          setMessage('The puzzle is incorrect. Use the Force and try again.');
+          setMessage({ text: 'The puzzle is incorrect. Use the Force and try again.', type: 'error' });
         }
       }
     }
