@@ -1,9 +1,11 @@
-// src/components/Sudoku.js
+// Importing necessary dependencies
 import React, { useState, useEffect } from 'react';
 import './Sudoku.scss';
 
+// Define an empty Sudoku grid
 const EMPTY_SUDOKU = Array.from({ length: 9 }, () => Array(9).fill(0));
 
+// Array of Star Wars quotes for display
 const quotes = [
     "This is the way.",
     "May the Force be with you.",
@@ -11,24 +13,30 @@ const quotes = [
     "In my experience, there is no such thing as luck.",
     "The Emperor is not as forgiving as I am. — Darth Vader"
 ];
-  
+
+// Function to get a random quote from the quotes array
 const getRandomQuote = () => {
     const randomIndex = Math.floor(Math.random() * quotes.length);
     return quotes[randomIndex];
 };
 
+// Function to shuffle the elements of an array
 const shuffleArray = (array) => {
+  // Create a copy of the array
   const shuffledArray = [...array];
   for (let i = shuffledArray.length - 1; i > 0; i--) {
+    // Swap elements randomly
     const j = Math.floor(Math.random() * (i + 1));
     [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
   }
   return shuffledArray;
 };
 
+// Function to generate a Sudoku puzzle based on difficulty
 const generateSudoku = (difficulty) => {
     const baseSudoku = EMPTY_SUDOKU.map(() => shuffleArray([...Array(9).keys()]));
-  
+
+    // Customize the puzzle based on difficulty
     switch (difficulty) {
       case 'Youngling':
         return baseSudoku.map((row) => shuffleArray(row).map((cell) => (Math.random() < 1 ? cell : 0)));
@@ -48,7 +56,9 @@ const generateSudoku = (difficulty) => {
     }
 };
 
+// Sudoku component
 const Sudoku = () => {
+  // State variables
   const [difficulty, setDifficulty] = useState('');
   const [sudoku, setSudoku] = useState([]);
   const [originalSudoku, setOriginalSudoku] = useState([]);
@@ -58,21 +68,23 @@ const Sudoku = () => {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [currentQuote, setCurrentQuote] = useState(getRandomQuote());
   
+  // useEffect hook to handle changes in difficulty
   useEffect(() => {
-      if (difficulty) {
-          const newSudoku = generateSudoku(difficulty);
-          setOriginalSudoku(newSudoku.map((row) => [...row])); // Create a copy of the puzzle
-          setSudoku(newSudoku);
-          setIsSolved(false);
-          setShowSolution(false);
+    // Generate a new Sudoku puzzle when the difficulty changes
+    if (difficulty) {
+        const newSudoku = generateSudoku(difficulty);
+        setOriginalSudoku(newSudoku.map((row) => [...row])); // Create a copy of the puzzle
+        setSudoku(newSudoku);
+        setIsSolved(false);
+        setShowSolution(false);
 
-          // Change quote every 8 seconds
-          const quoteInterval = setInterval(() => {
-              setCurrentQuote(getRandomQuote());
-          }, 8000);
+        // Change quote every 8 seconds
+        const quoteInterval = setInterval(() => {
+            setCurrentQuote(getRandomQuote());
+        }, 8000);
 
-          return () => clearInterval(quoteInterval);
-      }
+        return () => clearInterval(quoteInterval);
+    }
   }, [difficulty]);
 
   // Function to check if a number can be placed in a given position
@@ -89,7 +101,8 @@ const Sudoku = () => {
       }
       return true;
   };
-    
+  
+  // Function to solve the Sudoku puzzle - cheat mode to test
   const solveSudoku = () => {
     const solution = [
       [5, 3, 4, 6, 7, 8, 9, 1, 2],
@@ -126,6 +139,8 @@ const Sudoku = () => {
       setTimeout(() => setMessage(''), 5000);
   };
 
+  // Function to solve the puzzle
+  // ERROR is in here somewhere - find it!
   const solvePuzzle = () => {
     if (difficulty) {
 
@@ -194,6 +209,7 @@ const Sudoku = () => {
     }
   };
 
+   // Function to handle changes in Sudoku cell values
   const handleCellChange = (row, col, value) => {
     if (!isSolved && difficulty) {
       // Validate that only one digit can populate the cell
@@ -207,6 +223,8 @@ const Sudoku = () => {
     }
   };
 
+  // Function to handle using the Force to complete the puzzle
+  // Idea here was to create an 'easter egg' that would solve the puzzle for the user if they found the button
   const handleUseTheForce = () => {
     if (!isSolved) {
       const solvedSudoku = solveSudoku(originalSudoku);
@@ -234,6 +252,7 @@ const Sudoku = () => {
     }
   };
 
+  // Render the Sudoku component
   return (
     <div className="sudoku-container">
       <button className="use-the-force-btn" onClick={handleUseTheForce} title="Use the Force">
