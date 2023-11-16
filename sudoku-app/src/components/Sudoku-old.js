@@ -1,4 +1,3 @@
-// src/components/Sudoku.js
 import React, { useState, useEffect } from 'react';
 import solveSudoku from './sudokuSolver';
 import './Sudoku.scss';
@@ -28,25 +27,31 @@ const shuffleArray = (array) => {
 };
 
 const generateSudoku = (difficulty) => {
-    const baseSudoku = EMPTY_SUDOKU.map(() => shuffleArray([...Array(9).keys()]));
-  
-    switch (difficulty) {
-      case 'Youngling':
-        return baseSudoku.map((row) => shuffleArray(row).map((cell) => (Math.random() < 1 ? cell : 0)));
-      case 'Padawan':
-        return baseSudoku.map((row) => shuffleArray(row).map((cell) => (Math.random() < 0.6 ? cell : 0)));
-      case 'Knight':
-        return baseSudoku.map((row) => shuffleArray(row).map((cell) => (Math.random() < 0.5 ? cell : 0)));
-      case 'Master':
-        return baseSudoku.map((row) => shuffleArray(row).map((cell) => (Math.random() < 0.4 ? cell : 0)));
-      case 'Grand Master':
-        return baseSudoku.map((row) => {
-          const filledIndexes = shuffleArray([...Array(9).keys()]).slice(0, 2);
-          return row.map((cell, index) => (filledIndexes.includes(index) ? cell : 0));
-        });
-      default:
-        return baseSudoku;
-    }
+  // Print the difficulty for debugging
+  console.log('Generating Sudoku with Difficulty:', difficulty);
+  const baseSudoku = EMPTY_SUDOKU.map(() => shuffleArray([...Array(9).keys()]));
+
+  switch (difficulty) {
+    case 'Youngling':
+      return baseSudoku.map((row) => shuffleArray(row).map((cell) => (Math.random() < 1 ? cell : 0)));
+    case 'Padawan':
+      return baseSudoku.map((row) => shuffleArray(row).map((cell) => (Math.random() < 0.6 ? cell : 0)));
+    case 'Knight':
+      return baseSudoku.map((row) => shuffleArray(row).map((cell) => (Math.random() < 0.5 ? cell : 0)));
+    case 'Master':
+      return baseSudoku.map((row) => shuffleArray(row).map((cell) => (Math.random() < 0.4 ? cell : 0)));
+    case 'Grand Master':
+      return baseSudoku.map((row) => {
+        const filledIndexes = shuffleArray([...Array(9).keys()]).slice(0, 2);
+        return row.map((cell, index) => (filledIndexes.includes(index) ? cell : 0));
+      });
+    default: 
+
+    // Print the generated puzzle for debugging
+    console.log('Generated Sudoku:', baseSudoku);
+
+    return baseSudoku;
+  }
 };
 
 const Sudoku = () => {
@@ -62,6 +67,9 @@ const Sudoku = () => {
   useEffect(() => {
       if (difficulty) {
           const newSudoku = generateSudoku(difficulty);
+
+          console.log('New Sudoku Puzzle:', newSudoku);
+
           setOriginalSudoku(newSudoku.map((row) => [...row])); // Create a copy of the puzzle
           setSudoku(newSudoku);
           setIsSolved(false);
@@ -92,12 +100,17 @@ const Sudoku = () => {
   };
     
   const solveSudoku = (sudoku) => {
+    console.log('Current Sudoku State:', sudoku);
+    // Check if the puzzle is solved
     for (let row = 0; row < 9; row++) {
       for (let col = 0; col < 9; col++) {
         if (sudoku[row][col] === 0) {
           for (let num = 1; num <= 9; num++) {
             if (isSafe(sudoku, row, col, num)) {
               sudoku[row][col] = num;
+
+              // Print the state after placing a number for debugging
+              console.log('Placed', num, 'at', row, ',', col);
   
               if (solveSudoku(sudoku)) {
                 return true;
